@@ -9,8 +9,8 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.spring</groupId>
-	<artifactId>JDK 17</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<artifactId>cadastro</artifactId>
+	<version>0.0.1</version>
 	<name>CadastroClienteSpringJpa</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
