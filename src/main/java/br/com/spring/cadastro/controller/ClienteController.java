@@ -7,13 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("clientes")
@@ -23,29 +18,49 @@ public class ClienteController {
     private ClienteRepository clienteDAO;
 
     @GetMapping()
-    public List<Cliente> getAllClientes(){
-        return clienteDAO.findAll();
+    public ResponseEntity<?> getAllClientes(){
+        List<Cliente> clienteList = clienteDAO.findAll();
+        if (!clienteList.isEmpty()){
+            return ResponseEntity.status(HttpStatus.OK).body(clienteList);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Não há clientes cadastrados.");
     }
 
     @GetMapping("/id")
-    public Cliente getClienteById(){
-        //Cliente c = new Cliente();
-        return null;
+    public ResponseEntity<?> getClienteById(@RequestParam(value = "id") int id){
+        Optional<Cliente> clienteOptional = clienteDAO.findById(id);
+        if (clienteOptional.isPresent()){
+            return ResponseEntity.status(HttpStatus.OK).body(clienteOptional.get());
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("ID não localizado.");
     }
 
     @PostMapping("/add")
     public ResponseEntity<?> createCliente(@RequestBody Cliente cliente){
-        clienteDAO.save(cliente);
-        return ResponseEntity.ok(cliente);
+        if (clienteDAO.save(cliente).getId() != null) {
+            return ResponseEntity.status(HttpStatus.OK).body(cliente);
+        }
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Erro ao adicionar cliente.");
     }
 
-    @PutMapping("/id")
-    public Cliente updateCliente(){
-        return null;
+    @PutMapping("/update")
+    public ResponseEntity<?> updateCliente(@RequestBody Cliente cliente){
+        if (cliente.getId() != null && clienteDAO.findById(cliente.getId()).isPresent()) {
+            clienteDAO.save(cliente);
+            return ResponseEntity.status(HttpStatus.OK).body(cliente);
+        }
+        //return ResponseEntity.status(HttpStatus.NO_CONTENT).body("Erro ao atualizar cliente.");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        //throw new ExceptionNotFound("ERRO: Não foi possivel atualizar o cliente");
     }
 
-    @DeleteMapping("/id")
-    public Cliente deleteCliente(){
-        return null;
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteCliente(@RequestParam(value = "id") int id){
+        try {
+            clienteDAO.deleteById(id);
+            return ResponseEntity.status(HttpStatus.OK).body("Cliente Removido com exito.");
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e);
+        }
     }
 }
